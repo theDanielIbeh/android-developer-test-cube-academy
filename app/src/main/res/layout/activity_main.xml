@@ -33,6 +33,25 @@
 		android:textAllCaps="true"
 		android:textColor="@color/black" />
 
+    <LinearLayout
+        android:background="@color/grey_light"
+        android:gravity="center_horizontal"
+        android:id="@+id/nominations_container"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+		android:visibility="gone">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/view_nomination_list_item" />
+
+    </LinearLayout>
+
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="0dp"
@@ -41,7 +60,8 @@
 		android:gravity="center_horizontal"
 		android:layout_weight="1"
 		android:orientation="vertical"
-		android:paddingHorizontal="30dp">
+		android:paddingHorizontal="30dp"
+		>
 
 		<ImageView
 			android:layout_width="wrap_content"
@@ -56,6 +76,35 @@
 			style="@style/bold_headline_medium"
 			android:layout_marginTop="24dp"
 			android:text="@string/empty_body"
+			android:textAlignment="center"
+			android:textAllCaps="true"
+			android:textColor="@color/grey_dark" />
+
+	</LinearLayout>
+
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:id="@+id/bad_network_container"
+		android:background="@color/grey_light"
+		android:gravity="center_horizontal"
+		android:layout_weight="1"
+		android:orientation="vertical"
+		android:paddingHorizontal="30dp"
+		android:visibility="gone">
+
+		<ImageView
+			android:layout_width="wrap_content"
+			android:layout_height="200dp"
+			android:importantForAccessibility="no"
+			android:src="@drawable/bad_network" />
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			style="@style/bold_headline_medium"
+			android:layout_marginTop="20dp"
+			android:text="@string/bad_network"
 			android:textAlignment="center"
 			android:textAllCaps="true"
 			android:textColor="@color/grey_dark" />

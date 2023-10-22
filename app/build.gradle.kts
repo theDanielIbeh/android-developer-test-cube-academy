@@ -20,7 +20,7 @@ android {
 		testInstrumentationRunner = "com.cube.cubeacademy.di.CustomTestRunner"
 
 		buildConfigField("String", "API_URL", "\"https://cube-academy-api.cubeapis.com/\"")
-		buildConfigField("String", "AUTH_TOKEN", "\"${project.property("authToken")}\"")
+		buildConfigField("String", "AUTH_TOKEN", "\"96|SC5sQ51YATRLxxvkZW5wMAfni36kkQG5rMWIe75Z00744eda\"")
 	}
 
 	buildTypes {

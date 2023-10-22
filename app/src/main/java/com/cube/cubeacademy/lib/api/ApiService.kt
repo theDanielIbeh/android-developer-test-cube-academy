@@ -21,5 +21,5 @@ interface ApiService {
 		@Field("nominee_id") nomineeId: String,
 		@Field("reason") reason: String,
 		@Field("process") process: String
-	): DataWrapper<Nomination>
+	): DataWrapper<Nomination?>
 }

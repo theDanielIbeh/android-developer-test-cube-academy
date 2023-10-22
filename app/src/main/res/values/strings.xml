@@ -15,4 +15,19 @@
 	<string name="nomination_submitted">Nomination Submitted</string>
 	<string name="back_to_home">Back to home</string>
 	<string name="nomination_submitted_body">Thank you for taking the time to fill out this form! Why not nominate another cube?</string>
+
+	<string name="select_option">Select Option</string>
+	<string name="cube_name"><font color="#FFF70087">*</font> Cube\'s Name</string>
+	<string name="reasoning"><font color="#FFF70087">*</font> Reasoning</string>
+	<string name="reasoning_hint">David always goes above and beyond with all the work that he does. He’s also a lovey person to work with!</string>
+	<string name="very_unfair">Very Unfair</string>
+	<string name="unfair">Unfair</string>
+	<string name="not_sure">Not Sure</string>
+	<string name="fair">Fair</string>
+	<string name="very_fair">Very Fair</string>
+	<string name="bad_network">Slow or no internet connection. Please check your settings.</string>
+	<string name="leave_page">Yes, leave page</string>
+	<string name="cancel">Cancel</string>
+	<string name="are_you_sure">Are you sure?</string>
+	<string name="warning_message">If you leave this page, you will loose any progress made.</string>
 </resources>

@@ -9,16 +9,16 @@ class Repository(val api: ApiService) {
 
 	suspend fun getAllNominations(): List<Nomination> {
 		// TODO: Write the code to fetch the list nominations from the api
-		return emptyList()
+		return api.getAllNominations().data
 	}
 
 	suspend fun getAllNominees(): List<Nominee> {
 		// TODO: Write the code to fetch list of all nominees from the api
-		return emptyList()
+		return api.getAllNominees().data
 	}
 
 	suspend fun createNomination(nomineeId: String, reason: String, process: String): Nomination? {
 		// TODO: Write the code to create a new nomination using the api
-		return null
+		return api.createNomination(nomineeId, reason, process).data
 	}
 }
