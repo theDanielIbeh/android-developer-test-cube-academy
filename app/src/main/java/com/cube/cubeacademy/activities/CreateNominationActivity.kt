@@ -4,11 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.RadioButton
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
+import com.cube.cubeacademy.R
 import com.cube.cubeacademy.databinding.ActivityCreateNominationBinding
 import com.cube.cubeacademy.fragments.AlertModalFragment
 import com.cube.cubeacademy.lib.di.Repository
@@ -50,9 +52,20 @@ class CreateNominationActivity : AppCompatActivity() {
             onBackPressedDispatcher.onBackPressed()
         }
         binding.submitButton.setOnClickListener {
-            viewModel.createNomination {
-                navigateToNominationSubmitted()
-                viewModel.resetNominationModel()
+            lifecycleScope.launch {
+                try {
+                    viewModel.createNomination {
+                        navigateToNominationSubmitted()
+                        viewModel.resetNominationModel()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(
+                        this@CreateNominationActivity,
+                        getString(R.string.cannot_submit),
+                        Toast.LENGTH_LONG
+                    ).show()
+                    e.printStackTrace()
+                }
             }
         }
     }
@@ -93,11 +106,11 @@ class CreateNominationActivity : AppCompatActivity() {
         lifecycleScope.launch {
             viewModel.nominees.collectLatest {
                 it.forEach { nominee -> nomineeList.add(nominee.firstName + " " + nominee.lastName) }
-//            Populate recyclerview with the nominees' names
+//            Populate dropdown with the nominees' names
                 binding.autoCompleteTextView.setAdapter(
                     ArrayAdapter(
                         this@CreateNominationActivity,
-                        com.cube.cubeacademy.R.layout.dropdown_item,
+                        R.layout.dropdown_item,
                         nomineeList
                     )
                 )

@@ -71,18 +71,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun createNomination(
+    suspend fun createNomination(
         navigate: () -> Unit
     ) {
-        viewModelScope.launch {
-            try {
-                repository.createNomination(
-                    nominationModel.nomineeId, nominationModel.reason, nominationModel.process
-                )
-                navigate()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        repository.createNomination(
+            nominationModel.nomineeId, nominationModel.reason, nominationModel.process
+        )
+        navigate()
     }
 }
