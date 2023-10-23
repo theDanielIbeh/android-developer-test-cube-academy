@@ -30,8 +30,9 @@ class NominationsRecyclerViewAdapter(
             /**
              * TODO: This should show the nominee name instead of their id! Where can you get their name from?
              */
-
+//            Display Nominee's name
             name.text = listener.getName(nomineeId = item.nomineeId)
+//            Display reason for nomination
             reason.text = item.reason
         }
     }

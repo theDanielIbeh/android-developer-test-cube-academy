@@ -1,24 +1,20 @@
 package com.cube.cubeacademy.activities
 
 import android.app.Application
-import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.cube.cubeacademy.lib.di.Repository
 import com.cube.cubeacademy.lib.models.Nomination
 import com.cube.cubeacademy.lib.models.Nominee
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import retrofit2.HttpException
+import javax.inject.Inject
 
-class MainViewModel(
-    private val application: Application,
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    application: Application,
     private val repository: Repository
 ) : AndroidViewModel(application) {
 
@@ -27,12 +23,12 @@ class MainViewModel(
         getNominations()
     }
 
-    private val _nominees = MutableLiveData<List<Nominee>?>()
-    val nominees: LiveData<List<Nominee>?>
+    private val _nominees = MutableStateFlow<List<Nominee>>(emptyList())
+    val nominees: StateFlow<List<Nominee>>
         get() = _nominees
 
-    private val _nominations = MutableLiveData<List<Nomination>?>()
-    val nominations: LiveData<List<Nomination>?>
+    private val _nominations = MutableStateFlow<List<Nomination>>(emptyList())
+    val nominations: StateFlow<List<Nomination>>
         get() = _nominations
 
     data class NominationModel(
@@ -46,10 +42,12 @@ class MainViewModel(
         reason = "",
         process = "",
     )
-    val nominationModelLive = MutableLiveData(nominationModel)
+    private val _nominationModelFlow = MutableStateFlow(nominationModel)
+    val nominationModelFlow : StateFlow<NominationModel>
+        get() = _nominationModelFlow
 
     fun updateNominationModelLive() {
-        nominationModelLive.postValue(nominationModel)
+        _nominationModelFlow.value = nominationModel
     }
 
     fun resetNominationModel() {
@@ -62,21 +60,20 @@ class MainViewModel(
     }
 
     private fun getNominees() {
-        CoroutineScope(Dispatchers.Main).launch {
+        viewModelScope.launch {
             try {
-                _nominees.postValue(repository.getAllNominees())
-            } catch (e: HttpException) {
+                _nominees.value = repository.getAllNominees()
+            } catch (e: Exception) {
                 e.printStackTrace()
-                return@launch
             }
         }
     }
 
     private fun getNominations() {
-        CoroutineScope(Dispatchers.Main).launch {
+        viewModelScope.launch {
             try {
-                _nominations.postValue(repository.getAllNominations())
-            } catch (e: HttpException) {
+                _nominations.value = repository.getAllNominations()
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
@@ -85,32 +82,20 @@ class MainViewModel(
     fun createNomination(
         navigate: () -> Unit
     ) {
-        CoroutineScope(Dispatchers.Main).launch {
+        viewModelScope.launch {
             try {
                 repository.createNomination(
                     nominationModel.nomineeId, nominationModel.reason, nominationModel.process
                 )
                 navigate()
-            } catch (e: HttpException) {
-                Toast.makeText(
-                    application.applicationContext,
-                    "Make sure your device is connected",
-                    Toast.LENGTH_SHORT
-                ).show()
+            } catch (e: Exception) {
+//                Toast.makeText(
+//                    application.applicationContext,
+//                    "Make sure your device is connected",
+//                    Toast.LENGTH_SHORT
+//                ).show()
                 e.printStackTrace()
             }
-        }
-    }
-
-    class MainViewModelFactory(
-        private val application: Application,
-        private val repository: Repository
-    ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-                return MainViewModel(application = application, repository = repository) as T
-            }
-            throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }

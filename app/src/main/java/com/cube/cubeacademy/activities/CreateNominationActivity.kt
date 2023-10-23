@@ -1,24 +1,23 @@
 package com.cube.cubeacademy.activities
 
-import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.RadioButton
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.R
+import androidx.lifecycle.repeatOnLifecycle
 import com.cube.cubeacademy.databinding.ActivityCreateNominationBinding
 import com.cube.cubeacademy.fragments.AlertModalFragment
 import com.cube.cubeacademy.lib.di.Repository
 import com.cube.cubeacademy.lib.models.Nominee
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -28,8 +27,7 @@ class CreateNominationActivity : AppCompatActivity() {
     @Inject
     lateinit var repository: Repository
 
-    private lateinit var viewModel: MainViewModel
-    private lateinit var viewModelFactory: MainViewModel.MainViewModelFactory
+    private val viewModel: MainViewModel by viewModels()
     private var alertModalFragment = AlertModalFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,19 +36,18 @@ class CreateNominationActivity : AppCompatActivity() {
         binding = ActivityCreateNominationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModelFactory = this.let {
-            MainViewModel.MainViewModelFactory(
-                application = it.application,
-                repository = repository
-            )
-        }
-
-        viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
-
-
         populateUI()
+    }
+
+    private fun populateUI() {
+        /**
+         * TODO: Populate the form after having added the views to the xml file (Look for TODO comments in the xml file)
+         * 		 Add the logic for the views and at the end, add the logic to create the new nomination using the api
+         * 		 The nominees drop down list items should come from the api (By fetching the nominee list)
+         */
+        populateNominees()
         setupEditableFields()
-        observeLiveData()
+        observeFlow()
         binding.backButton.setOnClickListener {
             if (hasStartedFilling()) {
                 alertModalFragment.show(supportFragmentManager, "AlertModalFragment")
@@ -64,15 +61,6 @@ class CreateNominationActivity : AppCompatActivity() {
                 viewModel.resetNominationModel()
             }
         }
-    }
-
-    private fun populateUI() {
-        /**
-         * TODO: Populate the form after having added the views to the xml file (Look for TODO comments in the xml file)
-         * 		 Add the logic for the views and at the end, add the logic to create the new nomination using the api
-         * 		 The nominees drop down list items should come from the api (By fetching the nominee list)
-         */
-        populateNominees()
     }
 
     private fun hasStartedFilling(): Boolean {
@@ -89,18 +77,18 @@ class CreateNominationActivity : AppCompatActivity() {
     private fun populateNominees() {
 //        Create a list of the first and last names of the nominees
         val nomineeList = mutableListOf<String>()
-        viewModel.nominees.observe(
-            this
-        ) {
-            it?.forEach { nominee -> nomineeList.add(nominee.firstName + " " + nominee.lastName) }
+        lifecycleScope.launch {
+            viewModel.nominees.collectLatest {
+                it.forEach { nominee -> nomineeList.add(nominee.firstName + " " + nominee.lastName) }
 //            Populate recyclerview with the nominees' names
-            binding.autoCompleteTextView.setAdapter(
-                ArrayAdapter(
-                    this,
-                    com.cube.cubeacademy.R.layout.dropdown_item,
-                    nomineeList
+                binding.autoCompleteTextView.setAdapter(
+                    ArrayAdapter(
+                        this@CreateNominationActivity,
+                        com.cube.cubeacademy.R.layout.dropdown_item,
+                        nomineeList
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -112,14 +100,19 @@ class CreateNominationActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun observeLiveData() {
-        viewModel.nominationModelLive.observe(this) {
-            val isNomineeSelected = it.nomineeId.isNotBlank()
-            val isReasonEntered = it.reason.isNotBlank()
-            val isProcessSelected = it.process.isNotBlank()
+    private fun observeFlow() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                viewModel.nominationModelFlow.collectLatest {
+                    Log.d("Nomination", it.toString())
+                    val isNomineeSelected = it.nomineeId.isNotBlank()
+                    val isReasonEntered = it.reason.isNotBlank()
+                    val isProcessSelected = it.process.isNotBlank()
 
-            binding.submitButton.isEnabled =
-                isNomineeSelected && isReasonEntered && isProcessSelected
+                    binding.submitButton.isEnabled =
+                        isNomineeSelected && isReasonEntered && isProcessSelected
+                }
+            }
         }
     }
 
@@ -129,8 +122,8 @@ class CreateNominationActivity : AppCompatActivity() {
         val process = binding.radioGroup
 
         nominee.setOnItemClickListener { _, _, position, _ ->
-            val selectedNominee: Nominee? = viewModel.nominees.value?.get(position)
-            viewModel.nominationModel.nomineeId = (selectedNominee?.nomineeId ?: "").toString()
+            val selectedNominee: Nominee = viewModel.nominees.value[position]
+            viewModel.nominationModel.nomineeId = selectedNominee.nomineeId
             viewModel.updateNominationModelLive()
         }
         reason.doOnTextChanged { text, _, _, _ ->

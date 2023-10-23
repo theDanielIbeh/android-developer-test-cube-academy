@@ -3,8 +3,9 @@ package com.cube.cubeacademy.lib.di
 import com.cube.cubeacademy.lib.api.ApiService
 import com.cube.cubeacademy.lib.models.Nomination
 import com.cube.cubeacademy.lib.models.Nominee
+import javax.inject.Inject
 
-class Repository(val api: ApiService) {
+class Repository @Inject constructor(val api: ApiService) {
 	// TODO: Add additional code if you need it
 
 	suspend fun getAllNominations(): List<Nomination> {
