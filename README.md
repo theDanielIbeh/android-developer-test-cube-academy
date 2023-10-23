@@ -29,6 +29,6 @@ An Authorization header is required for the API calls as the API uses a Bearer t
   - I used the api to send the user's input and create a new nomination.
 - On the third screen:
   - I added action logic to the two action buttons at the bottom of the screen. One should start another "Create nomination" form and the second should exit to the first screen. 
-- The basic DI modules and the retrofit instance and endpoints were already been defined, but were not being used. 
+- The basic DI modules and the retrofit instance and endpoints were already defined, but were not being used. 
   - I updated the [Repository] class to work with the API.
 
