@@ -2,15 +2,13 @@ package com.cube.cubeacademy.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.RadioButton
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.cube.cubeacademy.databinding.ActivityCreateNominationBinding
 import com.cube.cubeacademy.fragments.AlertModalFragment
 import com.cube.cubeacademy.lib.di.Repository
@@ -37,6 +35,7 @@ class CreateNominationActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         populateUI()
+        handleBackButton()
     }
 
     private fun populateUI() {
@@ -47,20 +46,34 @@ class CreateNominationActivity : AppCompatActivity() {
          */
         populateNominees()
         setupEditableFields()
-        observeFlow()
         binding.backButton.setOnClickListener {
-            if (hasStartedFilling()) {
-                alertModalFragment.show(supportFragmentManager, "AlertModalFragment")
-                return@setOnClickListener
-            }
-            navigateUpTo(Intent(this, MainActivity::class.java))
+            onBackPressedDispatcher.onBackPressed()
         }
         binding.submitButton.setOnClickListener {
             viewModel.createNomination {
-                navigateToNominationSubmitted();
+                navigateToNominationSubmitted()
                 viewModel.resetNominationModel()
             }
         }
+    }
+
+    private fun handleBackButton() {
+        val callback = object : OnBackPressedCallback(
+            true // default to enabled
+        ) {
+            override fun handleOnBackPressed() {
+                if (hasStartedFilling()) {
+                    alertModalFragment.show(supportFragmentManager, "AlertModalFragment")
+                } else {
+                    val intent = Intent(this@CreateNominationActivity, MainActivity::class.java)
+                    navigateUpTo(intent)
+                }
+            }
+        }
+        this.onBackPressedDispatcher.addCallback(
+            this, // LifecycleOwner
+            callback
+        )
     }
 
     private fun hasStartedFilling(): Boolean {
@@ -100,20 +113,12 @@ class CreateNominationActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun observeFlow() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
-                viewModel.nominationModelFlow.collectLatest {
-                    Log.d("Nomination", it.toString())
-                    val isNomineeSelected = it.nomineeId.isNotBlank()
-                    val isReasonEntered = it.reason.isNotBlank()
-                    val isProcessSelected = it.process.isNotBlank()
+    private fun checkInputFields(): Boolean {
+        val isNomineeSelected = viewModel.nominationModel.nomineeId.isNotBlank()
+        val isReasonEntered = viewModel.nominationModel.reason.isNotBlank()
+        val isProcessSelected = viewModel.nominationModel.process.isNotBlank()
 
-                    binding.submitButton.isEnabled =
-                        isNomineeSelected && isReasonEntered && isProcessSelected
-                }
-            }
-        }
+        return isNomineeSelected && isReasonEntered && isProcessSelected
     }
 
     private fun setupEditableFields() {
@@ -124,16 +129,16 @@ class CreateNominationActivity : AppCompatActivity() {
         nominee.setOnItemClickListener { _, _, position, _ ->
             val selectedNominee: Nominee = viewModel.nominees.value[position]
             viewModel.nominationModel.nomineeId = selectedNominee.nomineeId
-            viewModel.updateNominationModelLive()
+            binding.submitButton.isEnabled = checkInputFields()
         }
         reason.doOnTextChanged { text, _, _, _ ->
             viewModel.nominationModel.reason = text.toString()
-            viewModel.updateNominationModelLive()
+            binding.submitButton.isEnabled = checkInputFields()
         }
         process.setOnCheckedChangeListener { group, checkedId ->
             val checkedProcess = group.findViewById<RadioButton>(checkedId)
             viewModel.nominationModel.process = convertToSnakeCase(checkedProcess.text)
-            viewModel.updateNominationModelLive()
+            binding.submitButton.isEnabled = checkInputFields()
         }
     }
 

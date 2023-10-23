@@ -1,14 +1,20 @@
 package com.cube.cubeacademy.activities
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.cube.cubeacademy.R
 import com.cube.cubeacademy.databinding.ActivityMainBinding
 import com.cube.cubeacademy.lib.adapters.NominationsRecyclerViewAdapter
 import com.cube.cubeacademy.lib.models.Nomination
@@ -25,29 +31,29 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
     }
 
 
-//    private var broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-//        override fun onReceive(context: Context, intent: Intent) {
-//            val notConnected = intent.getBooleanExtra(
-//                ConnectivityManager
-//                    .EXTRA_NO_CONNECTIVITY, false
-//            )
-//            if (notConnected) {
-//                onInternetUnavailable()
-//            } else {
-//                onInternetAvailable()
-//            }
-//        }
-//    }
-//
-//    override fun onStart() {
-//        super.onStart()
-//        registerReceiver(broadcastReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
-//    }
-//
-//    override fun onStop() {
-//        super.onStop()
-//        unregisterReceiver(broadcastReceiver)
-//    }
+    private var broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val notConnected = intent.getBooleanExtra(
+                ConnectivityManager
+                    .EXTRA_NO_CONNECTIVITY, false
+            )
+            if (notConnected) {
+                onInternetUnavailable()
+            } else {
+                onInternetAvailable()
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        registerReceiver(broadcastReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(broadcastReceiver)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +71,6 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
          * 		 And also add action to the "Create new nomination" button to go to the CreateNominationActivity
          */
         initialiseRecycler()
-        onInternetAvailable()
 
         binding.createButton.setOnClickListener {
             navigateToCreateNomination()
@@ -88,7 +93,6 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
     }
 
     private fun toggleRecyclerVisibility(nominations: List<Nomination>) {
-        binding.badNetworkContainer.visibility = View.GONE
         if (nominations.isEmpty()) {
             binding.emptyContainer.visibility = View.VISIBLE
             binding.nominationsContainer.visibility = View.GONE
@@ -100,17 +104,15 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
 
     private fun populateRecycler(nominations: List<Nomination>) {
         lifecycleScope.launch {
-            viewModel.nominees.collectLatest {
-                nominationsAdapter.submitList(nominations)
-            }
+            nominationsAdapter.submitList(nominations)
         }
     }
 
     override fun getName(nomineeId: String): String {
         val currentNominee =
             viewModel.nominees.value.filter { nominee -> nominee.nomineeId == nomineeId }[0]
-        val firstName = currentNominee.firstName ?: ""
-        val lastName = currentNominee.lastName ?: ""
+        val firstName = currentNominee.firstName
+        val lastName = currentNominee.lastName
         return "$firstName $lastName".trim()
     }
 
@@ -128,8 +130,6 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
 
     private fun onInternetUnavailable(
     ) {
-        binding.badNetworkContainer.visibility = View.VISIBLE
-        binding.emptyContainer.visibility = View.GONE
-        binding.nominationsContainer.visibility = View.GONE
+        Toast.makeText(this, getString(R.string.bad_network), Toast.LENGTH_LONG).show()
     }
 }

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.cube.cubeacademy.activities.CreateNominationActivity
 import com.cube.cubeacademy.activities.MainActivity
 import com.cube.cubeacademy.databinding.FragmentAlertModalBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment

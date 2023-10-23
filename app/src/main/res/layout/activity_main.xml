@@ -82,35 +82,6 @@
 
 	</LinearLayout>
 
-	<LinearLayout
-		android:layout_width="wrap_content"
-		android:layout_height="match_parent"
-		android:id="@+id/bad_network_container"
-		android:background="@color/grey_light"
-		android:gravity="center_horizontal"
-		android:layout_weight="1"
-		android:orientation="vertical"
-		android:paddingHorizontal="30dp"
-		android:visibility="gone">
-
-		<ImageView
-			android:layout_width="wrap_content"
-			android:layout_height="200dp"
-			android:importantForAccessibility="no"
-			android:src="@drawable/bad_network" />
-
-		<TextView
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			style="@style/bold_headline_medium"
-			android:layout_marginTop="20dp"
-			android:text="@string/bad_network"
-			android:textAlignment="center"
-			android:textAllCaps="true"
-			android:textColor="@color/grey_dark" />
-
-	</LinearLayout>
-
 	<androidx.recyclerview.widget.RecyclerView
 		android:layout_width="match_parent"
 		android:layout_height="0dp"

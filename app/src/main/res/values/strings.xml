@@ -25,7 +25,7 @@
 	<string name="not_sure">Not Sure</string>
 	<string name="fair">Fair</string>
 	<string name="very_fair">Very Fair</string>
-	<string name="bad_network">Slow or no internet connection. Please check your settings.</string>
+	<string name="bad_network">Slow or no internet connection.</string>
 	<string name="leave_page">Yes, leave page</string>
 	<string name="cancel">Cancel</string>
 	<string name="are_you_sure">Are you sure?</string>

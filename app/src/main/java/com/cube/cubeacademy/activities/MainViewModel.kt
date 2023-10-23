@@ -42,13 +42,6 @@ class MainViewModel @Inject constructor(
         reason = "",
         process = "",
     )
-    private val _nominationModelFlow = MutableStateFlow(nominationModel)
-    val nominationModelFlow : StateFlow<NominationModel>
-        get() = _nominationModelFlow
-
-    fun updateNominationModelLive() {
-        _nominationModelFlow.value = nominationModel
-    }
 
     fun resetNominationModel() {
         nominationModel = NominationModel(
@@ -56,7 +49,6 @@ class MainViewModel @Inject constructor(
             reason = "",
             process = "",
         )
-        updateNominationModelLive()
     }
 
     private fun getNominees() {
@@ -89,11 +81,6 @@ class MainViewModel @Inject constructor(
                 )
                 navigate()
             } catch (e: Exception) {
-//                Toast.makeText(
-//                    application.applicationContext,
-//                    "Make sure your device is connected",
-//                    Toast.LENGTH_SHORT
-//                ).show()
                 e.printStackTrace()
             }
         }
