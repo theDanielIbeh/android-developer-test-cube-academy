@@ -21,6 +21,10 @@ import com.cube.cubeacademy.lib.models.Nomination
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Locale
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listener {
@@ -30,7 +34,7 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
         NominationsRecyclerViewAdapter(this)
     }
 
-
+    //    Detects the device's connectivity status
     private var broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val notConnected = intent.getBooleanExtra(
@@ -64,25 +68,30 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
         populateUI()
     }
 
+    /**
+     * Populates the recyclerview with data.
+     * Add the navigation logic to the create button.
+     */
     private fun populateUI() {
-        /**
-         * TODO: Populate the UI with data in this function
-         * 		 You need to fetch the list of user's nominations from the api and put the data in the recycler view
-         * 		 And also add action to the "Create new nomination" button to go to the CreateNominationActivity
-         */
-        initialiseRecycler()
+        setupRecycler()
 
         binding.createButton.setOnClickListener {
             navigateToCreateNomination()
         }
     }
 
+    /**
+     * Navigates to the Create Nomination screen.
+     */
     private fun navigateToCreateNomination() {
         val intent = Intent(this, CreateNominationActivity::class.java)
         startActivity(intent)
     }
 
-    private fun initialiseRecycler() {
+    /**
+     * Sets up the recycler
+     */
+    private fun setupRecycler() {
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             itemAnimator = DefaultItemAnimator()
@@ -92,6 +101,10 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
         }
     }
 
+    /**
+     * Toggles the visibility of the recyclerview based on the number of [nominations].
+     * @param nominations the list of previously nominations submitted.
+     */
     private fun toggleRecyclerVisibility(nominations: List<Nomination>) {
         if (nominations.isEmpty()) {
             binding.emptyContainer.visibility = View.VISIBLE
@@ -102,12 +115,36 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
         }
     }
 
+    /**
+     * Populates the recyclerview with the list of recently submitted nominations.
+     */
     private fun populateRecycler(nominations: List<Nomination>) {
-        lifecycleScope.launch {
-            nominationsAdapter.submitList(nominations)
-        }
+        val recentNominations = nominations.filter { nomination -> isCurrentNomination(nomination) }
+        nominationsAdapter.submitList(recentNominations)
     }
 
+    /**
+     * Returns true if the nomination was submitted this month.
+     */
+    private fun isCurrentNomination(nomination: Nomination): Boolean {
+//        Get current month and year
+        val calendar: Calendar = Calendar.getInstance()
+        val currentMonth: Int = calendar.get(Calendar.MONTH) + 1
+        val currentYear: Int = calendar.get(Calendar.YEAR)
+
+//        Get month and year of submission
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH)
+        val date = LocalDate.parse(nomination.dateSubmitted, formatter)
+        val nominationMonth = date.monthValue
+        val nominationYear = date.year
+
+        return (currentYear == nominationYear) && (currentMonth == nominationMonth)
+    }
+
+    /**
+     * Returns the nominee's first and last names.
+     * @param nomineeId the id of the nominee.
+     */
     override fun getName(nomineeId: String): String {
         val currentNominee =
             viewModel.nominees.value.filter { nominee -> nominee.nomineeId == nomineeId }[0]
@@ -116,8 +153,10 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
         return "$firstName $lastName".trim()
     }
 
-    private fun onInternetAvailable(
-    ) {
+    /**
+     * Performs the contained action if the device is connected.
+     */
+    private fun onInternetAvailable() {
         lifecycleScope.launch {
             viewModel.nominations.collectLatest { nominations ->
                 nominations.let {
@@ -128,6 +167,9 @@ class MainActivity : AppCompatActivity(), NominationsRecyclerViewAdapter.Listene
         }
     }
 
+    /**
+     * Performs the contained action if the device is not connected.
+     */
     private fun onInternetUnavailable(
     ) {
         Toast.makeText(this, getString(R.string.bad_network), Toast.LENGTH_LONG).show()

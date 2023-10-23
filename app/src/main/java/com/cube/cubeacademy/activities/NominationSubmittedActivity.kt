@@ -17,11 +17,10 @@ class NominationSubmittedActivity : AppCompatActivity() {
 		populateUI()
 	}
 
+	/**
+	 * Adds the logic to the buttons.
+	 */
 	private fun populateUI() {
-		/**
-		 * TODO: Add the logic for the two buttons (Don't forget that if you start to add a new nomination, the back button shouldn't come back here)
-		 */
-
 		binding.submitButton.setOnClickListener {
 			navigateToCreateNomination()
 		}
@@ -32,7 +31,7 @@ class NominationSubmittedActivity : AppCompatActivity() {
 	}
 
 	/**
-	 *
+	 * Navigates to the Home screen.
 	 */
 	private fun navigateToHome() {
 		val intent = Intent(this, MainActivity::class.java)
@@ -42,7 +41,7 @@ class NominationSubmittedActivity : AppCompatActivity() {
 	}
 
 	/**
-	 *
+	 * Navigates to the Create Nomination screen.
 	 */
 	private fun navigateToCreateNomination() {
 		val intent = Intent(this, CreateNominationActivity::class.java)

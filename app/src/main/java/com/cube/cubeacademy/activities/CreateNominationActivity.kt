@@ -40,36 +40,48 @@ class CreateNominationActivity : AppCompatActivity() {
         handleBackButton()
     }
 
+    /**
+     * Populates the form with data.
+     * Add the logic to the buttons.
+     */
     private fun populateUI() {
-        /**
-         * TODO: Populate the form after having added the views to the xml file (Look for TODO comments in the xml file)
-         * 		 Add the logic for the views and at the end, add the logic to create the new nomination using the api
-         * 		 The nominees drop down list items should come from the api (By fetching the nominee list)
-         */
         populateNominees()
-        setupEditableFields()
+        setupEventListeners()
         binding.backButton.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
         binding.submitButton.setOnClickListener {
-            lifecycleScope.launch {
-                try {
-                    viewModel.createNomination {
-                        navigateToNominationSubmitted()
-                        viewModel.resetNominationModel()
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(
-                        this@CreateNominationActivity,
-                        getString(R.string.cannot_submit),
-                        Toast.LENGTH_LONG
-                    ).show()
-                    e.printStackTrace()
+            createNomination()
+        }
+    }
+
+    /**
+     * Creates a new nomination.
+     * Calls the function to navigate to the Nomination Submitted screen.
+     * Resets the nomination model object.
+     */
+    private fun createNomination() {
+        lifecycleScope.launch {
+            try {
+                viewModel.createNomination {
+                    navigateToNominationSubmitted()
+                    viewModel.resetNominationModel()
                 }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@CreateNominationActivity,
+                    getString(R.string.cannot_submit),
+                    Toast.LENGTH_LONG
+                ).show()
+                e.printStackTrace()
             }
         }
     }
 
+    /**
+     * Overrides the back button functionality.
+     * Brings up an alert modal if any form field has been filled.
+     */
     private fun handleBackButton() {
         val callback = object : OnBackPressedCallback(
             true // default to enabled
@@ -89,6 +101,9 @@ class CreateNominationActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Returns true if any of the form's fields has been filled.
+     */
     private fun hasStartedFilling(): Boolean {
         val isNomineeSelected = viewModel.nominationModel.nomineeId.isNotBlank()
         val isReasonEntered = viewModel.nominationModel.reason.isNotBlank()
@@ -98,7 +113,7 @@ class CreateNominationActivity : AppCompatActivity() {
     }
 
     /**
-     *
+     * Populates the nominee's dropdown with their first and last names
      */
     private fun populateNominees() {
 //        Create a list of the first and last names of the nominees
@@ -119,13 +134,16 @@ class CreateNominationActivity : AppCompatActivity() {
     }
 
     /**
-     *
+     * Navigates to the Navigation Submitted screen.
      */
     private fun navigateToNominationSubmitted() {
         val intent = Intent(this, NominationSubmittedActivity::class.java)
         startActivity(intent)
     }
 
+    /**
+     * Returns true if all fields have been filled.
+     */
     private fun checkInputFields(): Boolean {
         val isNomineeSelected = viewModel.nominationModel.nomineeId.isNotBlank()
         val isReasonEntered = viewModel.nominationModel.reason.isNotBlank()
@@ -134,29 +152,38 @@ class CreateNominationActivity : AppCompatActivity() {
         return isNomineeSelected && isReasonEntered && isProcessSelected
     }
 
-    private fun setupEditableFields() {
-        val nominee = binding.autoCompleteTextView
-        val reason = binding.editTextTextMultiLine
-        val process = binding.radioGroup
+    /**
+     * Performs change detection in each field.
+     * Updates the create button's enabled state.
+     */
+    private fun setupEventListeners() {
+        val nomineeDropdown = binding.autoCompleteTextView
+        val reasonTextField = binding.editTextTextMultiLine
+        val processOptions = binding.radioGroup
 
-        nominee.setOnItemClickListener { _, _, position, _ ->
+        nomineeDropdown.setOnItemClickListener { _, _, position, _ ->
             val selectedNominee: Nominee = viewModel.nominees.value[position]
             viewModel.nominationModel.nomineeId = selectedNominee.nomineeId
             binding.submitButton.isEnabled = checkInputFields()
         }
-        reason.doOnTextChanged { text, _, _, _ ->
+        reasonTextField.doOnTextChanged { text, _, _, _ ->
             viewModel.nominationModel.reason = text.toString()
             binding.submitButton.isEnabled = checkInputFields()
         }
-        process.setOnCheckedChangeListener { group, checkedId ->
-            val checkedProcess = group.findViewById<RadioButton>(checkedId)
-            viewModel.nominationModel.process = convertToSnakeCase(checkedProcess.text)
+        processOptions.setOnCheckedChangeListener { group, checkedId ->
+            val checkedOption = group.findViewById<RadioButton>(checkedId)
+            viewModel.nominationModel.process = convertToSnakeCase(checkedOption.text.toString())
             binding.submitButton.isEnabled = checkInputFields()
         }
     }
 
-    private fun convertToSnakeCase(text: CharSequence): String {
+    /**
+     * Returns entered [text] in snake case.
+     * @param text the text to be converted.
+     */
+    private fun convertToSnakeCase(text: String): String {
         var convertedText = ""
+//        Convert any space to underscore and all letters to lowercase
         text.forEach { char ->
             convertedText += if (char.toString() == " ") {
                 "_"

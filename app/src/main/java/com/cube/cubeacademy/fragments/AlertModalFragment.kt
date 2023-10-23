@@ -38,7 +38,7 @@ class AlertModalFragment : BottomSheetDialogFragment() {
     }
 
     /**
-     *
+     * Navigates to the Home screen.
      */
     private fun navigateToHome() {
         val intent = Intent(requireContext(), MainActivity::class.java)
