@@ -35,9 +35,7 @@ class NominationSubmittedActivity : AppCompatActivity() {
 	 */
 	private fun navigateToHome() {
 		val intent = Intent(this, MainActivity::class.java)
-		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-		startActivity(intent)
-		this.finish()
+		navigateUpTo(intent)
 	}
 
 	/**
